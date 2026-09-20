@@ -1,0 +1,105 @@
+name: Import HackerAI + OmniRoute
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-actions[bot]'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Import and patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp -d)"
+          git clone --depth 1 https://github.com/hackerai-tech/hackerai.git "$tmp/hackerai"
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -a "$tmp/hackerai"/. .
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          root=Path('.')
+
+          p=root/'lib/ai/providers.ts'; s=p.read_text()
+          s=s.replace('import { createOpenRouter } from "@openrouter/ai-sdk-provider";', 'import { createOpenAICompatible } from "@ai-sdk/openai-compatible";')
+          s=s.replace('import { openrouterAttributionHeaders } from "@/lib/ai/openrouter-attribution";\n','')
+          start=s.index('const OPENROUTER_METADATA_HEADER ='); end=s.index('export const PDF_PARSER_ENGINE_HEADER =',start); s=s[:start]+s[end:]
+          s=s.replace('''const nextInit: RequestInit = {
+      ...init,
+      headers: withOpenRouterMetadataHeader(init?.headers),
+    };''','''const nextInit: RequestInit = {
+      ...init,
+      headers: new Headers(init?.headers),
+    };''')
+          s=s.replace('''const openrouterPatchFetch = createOpenRouterPatchFetch();
+
+const openrouter = createOpenRouter({
+  fetch: openrouterPatchFetch,
+  headers: openrouterAttributionHeaders,
+});
+
+type OpenRouterInstance = typeof openrouter;''','''const omniroutePatchFetch = createOpenRouterPatchFetch();
+
+const OMNIROUTE_BASE_URL =
+  process.env.OMNIROUTE_BASE_URL?.trim() || "http://127.0.0.1:20128/v1";
+
+const omniroute = createOpenAICompatible({
+  name: "omniroute",
+  baseURL: OMNIROUTE_BASE_URL,
+  apiKey: process.env.OMNIROUTE_API_KEY,
+  fetch: omniroutePatchFetch,
+  includeUsage: true,
+});
+
+type OmniRouteInstance = typeof omniroute;''')
+          s=s.replace('  or: OpenRouterInstance,','  or: OmniRouteInstance,')
+          needle='const buildProviderMap = (\n  or: OmniRouteInstance,'
+          helper='''const parseOmniRouteModelMap = (): Record<string, string> => {
+  const raw = process.env.OMNIROUTE_MODEL_MAP?.trim();
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!isRecord(parsed)) return {};
+    return Object.fromEntries(Object.entries(parsed).filter(([k,v]) =>
+      typeof k === "string" && k.length > 0 && typeof v === "string" && v.trim().length > 0,
+    )) as Record<string,string>;
+  } catch {
+    console.warn("Invalid OMNIROUTE_MODEL_MAP; using original model slugs.");
+    return {};
+  }
+};
+const omniRouteModelMap = parseOmniRouteModelMap();
+const resolveOmniRouteModel = (modelSlug: string): string => omniRouteModelMap[modelSlug] ?? modelSlug;
+
+'''
+          s=s.replace(needle,helper+needle)
+          a=s.index('const buildProviderMap = ('); b=s.index('const baseProviders:',a); block=s[a:b]
+          block=re.sub(r'or\(([^\\n]+?)\)',r'or(resolveOmniRouteModel(\1))',block); s=s[:a]+block+s[b:]
+          p.write_text(s)
+
+          p=root/'.env.local.example'; s=p.read_text()
+          s=s.replace('# OpenRouter - Get key at: https://openrouter.ai/\nOPENROUTER_API_KEY=', '# OmniRoute - OpenAI-compatible local/cloud AI gateway.\nOMNIROUTE_BASE_URL=http://127.0.0.1:20128/v1\nOMNIROUTE_API_KEY=\nOMNIROUTE_MODEL_MAP={}')
+          p.write_text(s)
+
+          p=root/'scripts/setup.ts'; s=p.read_text()
+          s=s.replace('getOpenRouterApiKey','getOmniRouteApiKey').replace('OpenRouter API Key','OmniRoute API Key').replace('OpenRouter keys should start with "sk-"','OmniRoute keys can use any non-empty value').replace('https://openrouter.ai/keys','your OmniRoute dashboard')
+          s=s.replace('if (key.startsWith("sk-")) {','if (key.length > 0) {')
+          s=s.replace('const OPENROUTER_API_KEY = await getOmniRouteApiKey();','const OMNIROUTE_API_KEY = await getOmniRouteApiKey();')
+          s=s.replace('OPENROUTER_API_KEY,','OMNIROUTE_API_KEY,\n    OMNIROUTE_BASE_URL: "http://127.0.0.1:20128/v1",\n    OMNIROUTE_MODEL_MAP: "{}",')
+          s=s.replace('OPENROUTER_API_KEY=\${envVars.OPENROUTER_API_KEY}','OMNIROUTE_BASE_URL=\${envVars.OMNIROUTE_BASE_URL}\nOMNIROUTE_API_KEY=\${envVars.OMNIROUTE_API_KEY}\nOMNIROUTE_MODEL_MAP=\${envVars.OMNIROUTE_MODEL_MAP}')
+          p.write_text(s)
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Import HackerAI and route AI through OmniRoute" || exit 0
+          git push origin main
