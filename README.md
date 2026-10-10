@@ -2,20 +2,19 @@
 
 Cybersecurity research and AI experiments.
 
-## Scratch Neural AI — Cyber Lab
+## Projects
 
-The first runnable project lives in [`cyber-lab/`](./cyber-lab/).
+### Cyber Lab (local MVP)
+The first runnable project lives in [`cyber-lab/`](./cyber-lab/). It contains a local browser UI, static Python source checks, a tiny NumPy backpropagation demo, and a toy genetic algorithm.
 
-- Local browser UI for reviewing pasted Python source
-- Static checks with file/line/snippet evidence and remediation notes
-- Tiny NumPy neural network trained with real backpropagation
-- Separate genetic-algorithm learning demo
+### Cloud Transformer training
+The new [`cyber-lab/cloud/`](./cyber-lab/cloud/) path adds:
+- tokenizer training from a user-provided code corpus;
+- a decoder-only Transformer initialized with **random weights** (not a pretrained model);
+- configurable tiny/small/medium/large/XL model presets;
+- GPU training with mixed precision, gradient checkpointing, evaluation, checkpoints, and resume support;
+- a cloud setup guide and commands.
 
-### Quick start (Windows)
+Start with the [cloud training guide](./cyber-lab/cloud/README.md). It requires a CUDA GPU runtime and a licensed corpus; do a tiny smoke test before scaling.
 
-1. Open the [Cyber Lab folder](./cyber-lab/).
-2. Install Python 3.11 or 3.12.
-3. Run `run.bat`, or follow the full setup in [cyber-lab/README.md](./cyber-lab/README.md).
-4. Open http://127.0.0.1:5000.
-
-**Important:** This is an educational MVP, not a frontier AI or zero-day discovery engine. Findings are static-analysis leads, not proof. Use it only on code you own or are authorized to assess.
+**Important:** This is training infrastructure, not a frontier model or a proven vulnerability detector. Language-model loss/perplexity do not measure vulnerability detection. Any security detector needs a separate supervised training stage, held-out benchmarks, false-positive/false-negative measurement, and human validation. No zero-day discovery is guaranteed. Use only code and systems you own or are authorized to assess.
