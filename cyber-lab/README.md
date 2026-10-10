@@ -1,16 +1,12 @@
 # Scratch Neural AI — Cyber Lab (MVP)
 
-A local-first educational cybersecurity code-review app with:
-- browser UI and visible analysis pipeline;
-- static Python source checks with rule IDs, severity estimates, line numbers, snippets, and remediation guidance;
-- a tiny NumPy neural network trained by real backpropagation;
-- a separate genetic-algorithm toy experiment.
+A local-first educational cybersecurity code-review app with a browser UI, static Python checks, a tiny NumPy backpropagation demo, and a toy genetic-algorithm experiment.
 
-## Run on Windows
+## Run the local MVP on Windows
 
 1. Install Python 3.11 or 3.12 from https://www.python.org/downloads/ and enable **Add Python to PATH**.
 2. Open Command Prompt in this folder.
-3. Run these commands:
+3. Run:
 
 ```bat
 py -m venv .venv
@@ -20,23 +16,16 @@ pip install -r requirements.txt
 python app.py
 ```
 
-4. Open http://127.0.0.1:5000 in your browser.
-5. Stop the server with Ctrl+C in Command Prompt.
+4. Open http://127.0.0.1:5000.
 
 ## What it actually does
 
-The scanner checks pasted Python code for selected patterns such as eval/exec, subprocess shell=True, likely hard-coded secrets, unsafe YAML loading, disabled TLS verification, weak hashes, pickle deserialization, debug=True, and possible SQL string formatting. Results are **static-analysis leads**, not proof of a vulnerability. It does not execute pasted code or connect to remote targets.
+The scanner checks pasted Python code for selected risky patterns and returns static-analysis leads with evidence. It does not execute pasted code or connect to remote targets. The NumPy network learns a tiny synthetic teaching task; its output is **not** a vulnerability probability. The genetic algorithm optimizes a toy threshold, not security findings.
 
-The NumPy network uses forward passes, loss calculation, gradients, and weight updates. It trains on a tiny synthetic toy dataset solely to demonstrate backpropagation. Its prediction is **not** a vulnerability probability. The genetic algorithm optimizes a toy threshold, not security findings.
+## Cloud training path
 
-## Limits and responsible use
+For a configurable Transformer trained from random initialization on a GPU, see [`cloud/README.md`](./cloud/README.md). That path trains a tokenizer and decoder-only language model, with checkpoints and evaluation. It is separate from this small web demo.
 
-This is an MVP, not a frontier model or a zero-day discovery engine. It cannot promise never-before-seen findings; that requires deeper analysis, careful validation, and independent review. Use it only on code you own or have explicit permission to assess. Do not treat a clean scan as proof that software is secure.
+**Important:** The cloud language model is not automatically a vulnerability detector. Security detection requires labeled, licensed examples, a separate supervised training/evaluation stage, held-out projects, false-positive/false-negative measurement, and independent review. No model can guarantee discovery of unknown vulnerabilities.
 
-## Next development steps
-
-- Add tests and a richer AST-based rule engine.
-- Add SARIF/JSON report export and confidence/false-positive workflow.
-- Add dependency audit and secret scanning.
-- Add repository ingestion limited to explicitly authorized projects.
-- Train/evaluate a model on licensed, curated vulnerability examples with held-out data before making claims about detection performance.
+Use only datasets and code you have permission to use, and assess only systems you own or are explicitly authorized to test.
