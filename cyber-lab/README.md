@@ -1,31 +1,38 @@
-# Scratch Neural AI — Cyber Lab (MVP)
+# Code Integrity Research Lab — Local Cyber Lab
 
-A local-first educational cybersecurity code-review app with a browser UI, static Python checks, a tiny NumPy backpropagation demo, and a toy genetic-algorithm experiment.
+This folder contains the original local dashboard kept for compatibility while the Python package migration proceeds.
 
-## Run the local MVP on Windows
+## Run the local dashboard on Windows
 
 1. Install Python 3.11 or 3.12 from https://www.python.org/downloads/ and enable **Add Python to PATH**.
-2. Open Command Prompt in this folder.
-3. Run:
+2. Open this folder in File Explorer.
+3. Double-click `run.bat`.
+4. Open http://127.0.0.1:5000.
+
+Or open Command Prompt in this folder and run:
 
 ```bat
 py -m venv .venv
-.venv\\Scripts\\activate
+call .venv\Scripts\activate.bat
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 python app.py
 ```
 
-4. Open http://127.0.0.1:5000.
+Stop the server with Ctrl+C in the terminal.
 
-## What it actually does
+## What this dashboard does
 
-The scanner checks pasted Python code for selected risky patterns and returns static-analysis leads with evidence. It does not execute pasted code or connect to remote targets. The NumPy network learns a tiny synthetic teaching task; its output is **not** a vulnerability probability. The genetic algorithm optimizes a toy threshold, not security findings.
+The scanner checks pasted Python source for a limited set of risky patterns. It reports line-based evidence and remediation guidance, but it does not execute pasted source or connect to remote systems. Findings are static-analysis leads, not proof.
 
-## Cloud training path
+The NumPy network learns a tiny synthetic teaching task using backpropagation. Its prediction is **not** a vulnerability probability. The genetic-algorithm component is a toy optimization demonstration, not a security detector.
 
-For a configurable Transformer trained from random initialization on a GPU, see [`cloud/README.md`](./cloud/README.md). That path trains a tokenizer and decoder-only language model, with checkpoints and evaluation. It is separate from this small web demo.
+## Maintained package
 
-**Important:** The cloud language model is not automatically a vulnerability detector. Security detection requires labeled, licensed examples, a separate supervised training/evaluation stage, held-out projects, false-positive/false-negative measurement, and independent review. No model can guarantee discovery of unknown vulnerabilities.
+The actively maintained Python components now live in `../src/code_integrity_lab/`. The local `scanner.py`, `neural_net.py`, and `genetic.py` files are compatibility shims. The Flask app and active UI template now live in `../src/code_integrity_lab/web/`; the legacy `app.py` wrapper starts that packaged app.
 
-Use only datasets and code you have permission to use, and assess only systems you own or are explicitly authorized to test.
+## Cloud training
+
+The package-level entry points are documented in [`../docs/training.md`](../docs/training.md) and [`../docs/cloud.md`](../docs/cloud.md). Existing wrapper scripts in `cloud/` remain available.
+
+**Limits:** No trained large language model or validated vulnerability detector is included. Use only code you own or are authorized to assess.

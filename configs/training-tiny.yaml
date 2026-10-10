@@ -1,0 +1,22 @@
+# Reference configuration for the tiny smoke test.
+# The current CLI takes arguments directly; this YAML file is not automatically loaded.
+model:
+  preset: tiny
+  context_length: 512
+  initialization: random
+training:
+  epochs: 1
+  batch_size: 2
+  gradient_accumulation_steps: 8
+  learning_rate: 0.0003
+  seed: 42
+  save_steps: 100
+data:
+  corpus_path: /data/code_corpus.txt
+  train_validation_split: document_level
+evaluation:
+  language_model_metrics:
+    - train_loss
+    - validation_loss
+    - perplexity
+  note: "These metrics are not vulnerability-detection accuracy."

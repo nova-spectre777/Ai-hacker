@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "code-integrity-research-lab"
+version = "0.1.0"
+description = "A reproducible code-security AI research platform for authorized defensive analysis."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Code Integrity Research Lab contributors" }]
+keywords = ["machine-learning", "code-security", "static-analysis", "research"]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Security",
+  "Topic :: Software Development :: Quality Assurance",
+]
+
+dependencies = []
+
+[project.optional-dependencies]
+web = [
+  "Flask>=3.0,<4",
+  "numpy>=1.26,<3",
+]
+training = [
+  "torch>=2.4",
+  "transformers>=4.45,<5",
+  "datasets>=3.0,<4",
+  "tokenizers>=0.20",
+  "accelerate>=1.0",
+  "safetensors>=0.4",
+]
+dev = [
+  "pytest>=8.0,<9",
+  "ruff>=0.6,<1",
+]
+
+[project.scripts]
+cil-train-tokenizer = "code_integrity_lab.tokenizer.train_tokenizer:main"
+cil-train-lm = "code_integrity_lab.training.train_lm:main"
+cil-web = "code_integrity_lab.web.app:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.setuptools.package-data]
+code_integrity_lab = ["web/templates/*.html"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
